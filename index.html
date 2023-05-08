@@ -857,7 +857,8 @@
                 </div>
             </div>
             <div class="messages">
-                <div id="chatlog"></div>
+                <div id="chatlog">
+                </div>
                 <div id="stopChat"><svg width="24" height="24">
                         <use xlink:href="#stopResIcon" />
                     </svg>停止</div>
@@ -2204,40 +2205,31 @@
         }
     </script>
     <script type="text/javascript">
-        // 获取div元素内的文本
-        function getTextFromDiv(element) {
-          // 排除id为pronMd的元素和按钮
-          var excludeElements = element.querySelectorAll("#pronMd, button, .m-mdic-copy-wrapper");
-          
-          // 移除排除元素
-          excludeElements.forEach(function(excludeElement) {
-             excludeElement.remove();
-          });
-          
-            // 获取class="request"的div元素并修改文本
-          var requestElements = element.querySelectorAll(".request");
-          requestElements.forEach(function(requestElement) {
-            requestElement.innerText = "问：" + requestElement.innerText + "\n";
-          });
-
-          var requestElements = element.querySelectorAll(".response");
-          requestElements.forEach(function(requestElement) {
-            requestElement.innerText = "答：" + requestElement.innerText + "\n";
-          });
-
-          // 返回剩下的文本
-          return element.innerText.trim();
-        }
         //导出文本
         function exportText() {
             var divElement = document.getElementById('chatlog')
-            var textContent = getTextFromDiv(divElement);
-            var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
+            //设置隐藏元素
+            var excludeElements = divElement.querySelectorAll("#pronMd, button, .m-mdic-copy-wrapper");
+            excludeElements.forEach(function(excludeElement) {
+                 excludeElement.remove()// 隐藏元素
+            });
+            var elements = divElement.querySelectorAll('.request, .response');
+            var newText = '';
+            //添加“问”“答”开头
+            for (var i = 0; i < elements.length; i++) {
+              var prefix = elements[i].classList.contains('request') ? '问：' : '答：';
+              newText += prefix + elements[i].innerText + '\n';
+            }
+            // var textContent = getTextFromDiv(divElement);
+            var blob = new Blob([newText], {type: "text/plain;charset=utf-8"});
             var downloadLink = document.createElement("a");
+            downloadLink.style.display = "none"; // 隐藏元素
             downloadLink.href = URL.createObjectURL(blob);
-            downloadLink.download = "myFile.txt";
-            downloadLink.type = "text/plain";
+            var timestamp = new Date().toISOString().replace(/[:.ZT]/g, '');
+            downloadLink.download = "Chatgpt-Web"+timestamp+".txt";
+            document.body.appendChild(downloadLink); // 添加元素
             downloadLink.click();
+            document.body.removeChild(downloadLink); // 移除元素
         }
     </script>
     <link href="//cdn.staticfile.org/github-markdown-css/5.2.0/github-markdown-light.min.css" rel="stylesheet">
